@@ -1,0 +1,18 @@
+# Local data should not be committed; use the report dataset link instead.
+data/
+
+# Word temporary lock files
+~$*.docx
+
+# Python / notebook cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local environment files
+.env
+.venv/
+venv/
+
+# Avoid duplicating model weights already stored for the Space app
+results/*.pt

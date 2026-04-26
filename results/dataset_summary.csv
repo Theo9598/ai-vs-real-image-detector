@@ -1,0 +1,11 @@
+label_name,category,n_images
+ai,animals,50
+ai,city,50
+ai,food,50
+ai,nature,50
+ai,people,50
+real,animals,148
+real,city,150
+real,food,150
+real,nature,150
+real,people,147

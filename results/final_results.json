@@ -1,0 +1,45 @@
+{
+  "seed": 142,
+  "data_root": "G:\\CodexProjects\\New project 3\\data",
+  "dataset_counts": {
+    "real": 745,
+    "ai": 250
+  },
+  "split_counts": {
+    "train": 695,
+    "validation": 150,
+    "test": 150
+  },
+  "final_model_name": "validation_weighted_ensemble",
+  "final_threshold": 0.4549999999999999,
+  "test_metrics": {
+    "threshold": 0.4549999999999999,
+    "accuracy": 0.9666666666666667,
+    "precision_ai": 0.9459459459459459,
+    "recall_ai": 0.9210526315789473,
+    "f1_ai": 0.9333333333333333,
+    "roc_auc": 0.9929511278195489,
+    "model": "validation_weighted_ensemble",
+    "split": "test"
+  },
+  "confusion_matrix_labels": [
+    "real",
+    "ai"
+  ],
+  "confusion_matrix": [
+    [
+      110,
+      2
+    ],
+    [
+      3,
+      35
+    ]
+  ],
+  "ensemble_weights": {
+    "resnet18": 0.24679570768541384,
+    "efficientnet_b0": 0.2532903249063439,
+    "mobilenet_v3_small": 0.2499131239514603,
+    "vit_b_16": 0.2500008434567819
+  }
+}
