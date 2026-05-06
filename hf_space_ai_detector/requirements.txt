@@ -3,3 +3,5 @@ torchvision
 gradio
 pillow
 numpy
+scikit-learn
+joblib

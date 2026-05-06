@@ -1,8 +1,10 @@
 from pathlib import Path
+import json
 
 import gradio as gr
+import joblib
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
@@ -13,10 +15,16 @@ MODEL_DIR = ROOT / "models"
 IMAGE_SIZE = 224
 AI_CLASS_ID = 1
 ID_TO_LABEL = {0: "Real", 1: "AI-generated"}
-REPORT_MODEL_NAME = "tiny_genimage_resnet18"
-REPORT_MODEL_LABEL = "Tiny GenImage ResNet18, 10 epochs"
-REPORT_THRESHOLD = 0.7949999999999999
-REPORT_METRICS = {
+RF_MODEL_LABEL = "Random Forest with handcrafted features"
+RESNET_MODEL_NAME = "tiny_genimage_resnet18"
+RESNET_MODEL_LABEL = "Tiny GenImage ResNet18, 10 epochs"
+
+with (MODEL_DIR / "tiny_genimage_random_forest_metadata.json").open("r", encoding="utf-8") as f:
+    RF_METADATA = json.load(f)
+
+RF_THRESHOLD = float(RF_METADATA["threshold"])
+RF_METRICS = RF_METADATA["metrics"]
+RESNET_METRICS = {
     "test_accuracy": 0.785,
     "test_precision_fake": 0.7549,
     "test_recall_fake": 0.844,
@@ -56,7 +64,7 @@ EVAL_TRANSFORM = transforms.Compose(
 
 
 def make_model(name: str) -> nn.Module:
-    if name == REPORT_MODEL_NAME:
+    if name == RESNET_MODEL_NAME:
         model = models.resnet18(weights=None)
         model.fc = nn.Linear(model.fc.in_features, 2)
         return model
@@ -64,29 +72,96 @@ def make_model(name: str) -> nn.Module:
 
 
 def load_models() -> dict[str, nn.Module]:
-    model = make_model(REPORT_MODEL_NAME)
-    state = torch.load(MODEL_DIR / f"{REPORT_MODEL_NAME}_best.pt", map_location=DEVICE)
-    model.load_state_dict(state)
-    model.to(DEVICE)
-    model.eval()
-    return {REPORT_MODEL_NAME: model}
+    resnet = make_model(RESNET_MODEL_NAME)
+    state = torch.load(MODEL_DIR / f"{RESNET_MODEL_NAME}_best.pt", map_location=DEVICE)
+    resnet.load_state_dict(state)
+    resnet.to(DEVICE)
+    resnet.eval()
+    return {
+        "random_forest": joblib.load(MODEL_DIR / "tiny_genimage_random_forest.joblib"),
+        RESNET_MODEL_NAME: resnet,
+    }
 
 
 MODELS = load_models()
 
 
-def predict_probabilities(image: Image.Image) -> tuple[float, dict[str, float]]:
+def safe_stats(values):
+    values = np.asarray(values, dtype=np.float32).ravel()
+    if values.size == 0:
+        return [0.0, 0.0, 0.0, 0.0]
+    return [
+        float(np.mean(values)),
+        float(np.std(values)),
+        float(np.percentile(values, 10)),
+        float(np.percentile(values, 90)),
+    ]
+
+
+def handcrafted_features(image: Image.Image) -> np.ndarray:
+    image = image.convert("RGB")
+    width, height = image.size
+    small_rgb = image.resize((128, 128), Image.Resampling.BILINEAR)
+    arr = np.asarray(small_rgb).astype(np.float32) / 255.0
+    gray = np.asarray(small_rgb.convert("L")).astype(np.float32) / 255.0
+
+    features = [width / max(height, 1), np.log1p(width * height)]
+    features.extend(arr.mean(axis=(0, 1)).tolist())
+    features.extend(arr.std(axis=(0, 1)).tolist())
+    for channel in range(3):
+        hist, _ = np.histogram(arr[:, :, channel], bins=8, range=(0.0, 1.0), density=True)
+        features.extend(hist.astype(float).tolist())
+    gray_hist, _ = np.histogram(gray, bins=16, range=(0.0, 1.0), density=True)
+    features.extend(gray_hist.astype(float).tolist())
+
+    gx = np.diff(gray, axis=1, append=gray[:, -1:])
+    gy = np.diff(gray, axis=0, append=gray[-1:, :])
+    grad_mag = np.sqrt(gx * gx + gy * gy)
+    features.extend(safe_stats(grad_mag))
+
+    blurred = np.asarray(small_rgb.convert("L").filter(ImageFilter.BoxBlur(1))).astype(np.float32) / 255.0
+    features.extend(safe_stats(np.abs(gray - blurred)))
+
+    spectrum = np.abs(np.fft.fftshift(np.fft.fft2(gray)))
+    yy, xx = np.indices(spectrum.shape)
+    center_y, center_x = (np.array(spectrum.shape) - 1) / 2
+    radius = np.sqrt((yy - center_y) ** 2 + (xx - center_x) ** 2)
+    total_energy = spectrum.sum() + 1e-8
+    low = spectrum[radius < 12].sum() / total_energy
+    mid = spectrum[(radius >= 12) & (radius < 36)].sum() / total_energy
+    high = spectrum[radius >= 36].sum() / total_energy
+    features.extend([float(low), float(mid), float(high), float(high / (low + 1e-8))])
+
+    vertical_edges = np.abs(np.diff(gray, axis=1))
+    horizontal_edges = np.abs(np.diff(gray, axis=0))
+    block_v = vertical_edges[:, 7::8].mean() if vertical_edges[:, 7::8].size else 0.0
+    block_h = horizontal_edges[7::8, :].mean() if horizontal_edges[7::8, :].size else 0.0
+    features.extend([float(block_v), float(block_h), float((block_v + block_h) / (grad_mag.mean() + 1e-8))])
+    return np.asarray(features, dtype=np.float32)
+
+
+def resnet_probability(image: Image.Image) -> float:
     image = image.convert("RGB")
     x = EVAL_TRANSFORM(image).unsqueeze(0).to(DEVICE)
     with torch.no_grad():
-        output = MODELS[REPORT_MODEL_NAME](x)
+        output = MODELS[RESNET_MODEL_NAME](x)
         prob_ai = torch.softmax(output, dim=1)[0, AI_CLASS_ID].item()
-    return float(prob_ai), {REPORT_MODEL_LABEL: float(prob_ai)}
+    return float(prob_ai)
+
+
+def predict_probabilities(image: Image.Image) -> tuple[float, dict[str, float]]:
+    features = handcrafted_features(image).reshape(1, -1)
+    rf_prob = float(MODELS["random_forest"].predict_proba(features)[0, AI_CLASS_ID])
+    resnet_prob = resnet_probability(image)
+    return rf_prob, {
+        RF_MODEL_LABEL: rf_prob,
+        f"{RESNET_MODEL_LABEL} attention model": resnet_prob,
+    }
 
 
 def resnet_attention(image: Image.Image) -> Image.Image:
     """Simple Grad-CAM-style attention overlay for the AI class using ResNet18."""
-    model = MODELS[REPORT_MODEL_NAME]
+    model = MODELS[RESNET_MODEL_NAME]
     layer = model.layer4[-1]
     activations = []
     gradients = []
@@ -136,7 +211,7 @@ def analyze(image: Image.Image):
         return "Upload an image to run the detector.", {}, None
 
     prob_ai, per_model = predict_probabilities(image)
-    pred_id = int(prob_ai >= REPORT_THRESHOLD)
+    pred_id = int(prob_ai >= RF_THRESHOLD)
     verdict = ID_TO_LABEL[pred_id]
     confidence = prob_ai if pred_id == AI_CLASS_ID else 1.0 - prob_ai
     attention = resnet_attention(image)
@@ -145,14 +220,13 @@ def analyze(image: Image.Image):
 ### Prediction: {verdict}
 
 **AI probability:** {prob_ai:.4f}  
-**Decision threshold:** {REPORT_THRESHOLD:.4f}  
+**Decision threshold:** {RF_THRESHOLD:.4f}  
 **Displayed confidence:** {confidence:.4f}  
-**Final predictor:** {REPORT_MODEL_LABEL}
+**Final predictor:** {RF_MODEL_LABEL}
 
-This is the ResNet18 transfer-learning model from the Tiny GenImage 5k experiment in the report.
-Its held-out test results were accuracy {REPORT_METRICS["test_accuracy"]:.3f}, F1 {REPORT_METRICS["test_f1_fake"]:.3f}, and ROC-AUC {REPORT_METRICS["test_roc_auc"]:.3f}.
+This is the highest-scoring Tiny GenImage 5k model from the report. Its held-out test results were accuracy {RF_METRICS["accuracy"]:.3f}, F1 {RF_METRICS["f1_ai"]:.3f}, and ROC-AUC {RF_METRICS["roc_auc"]:.3f}.
 
-This is a statistical detector, not proof of image origin. The heatmap shows model attention regions.
+This is a statistical detector, not proof of image origin. The heatmap is generated by the ResNet18 comparison model as an attention visualization, not by the Random Forest itself.
 """
     rounded = {name: round(value, 4) for name, value in per_model.items()}
     return text, rounded, attention
@@ -177,7 +251,7 @@ with gr.Blocks(title="AI vs Real Image Detector", theme=gr.themes.Soft(), css=CS
 # AI vs Real Image Detector
 
 IEOR 142A course project demo. Upload an image to estimate whether it is AI-generated.
-The detector uses the Tiny GenImage 5k ResNet18 report model.
+The final detector uses the Tiny GenImage 5k Random Forest report model.
 The output is statistical decision support, not proof of image origin.
 
 </div>
@@ -192,8 +266,8 @@ The output is statistical decision support, not proof of image origin.
                     analyze_button = gr.Button("Analyze", variant="primary")
                 with gr.Column(scale=1):
                     result_text = gr.Markdown(label="Final Result")
-                    model_json = gr.JSON(label="Report Model AI Probability")
-                    attention_image = gr.Image(label="Model Attention Regions")
+                    model_json = gr.JSON(label="Model AI Probabilities")
+                    attention_image = gr.Image(label="ResNet18 Attention Regions")
 
             analyze_button.click(
                 fn=analyze,
@@ -206,8 +280,8 @@ The output is statistical decision support, not proof of image origin.
                 """
 ## Model comparison
 
-The deployed detector uses the Tiny GenImage 5k ResNet18 model from the report.
-The local-project ensemble is kept below as a comparison result, not as the active Space predictor.
+The deployed detector uses the Tiny GenImage 5k Random Forest model from the report because it has the best held-out test F1.
+The ResNet18 model is still used for the attention visualization in the Detector tab.
 """
             )
             gr.Markdown("### Local project dataset, held-out test")

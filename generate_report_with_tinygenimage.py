@@ -299,7 +299,7 @@ p(
     "In AI-image detection, false positives and false negatives have different costs. A false positive may wrongly label a real image as synthetic, while a false negative may let a fake image pass as real. The deployed Hugging Face Space therefore presents the output as statistical decision support, not proof of image origin. The Grad-CAM-style visualization is also described as model attention rather than evidence of actual AI artifacts."
 )
 p(
-    "The Hugging Face demo is available at https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector. The active Space predictor is the Tiny GenImage ResNet18 model from Table 3, using the validation-selected threshold 0.795. The local ensemble and classical models are retained as comparison results. The GitHub appendix is available at https://github.com/Theo9598/ai-vs-real-image-detector. A real deployment would require larger multi-source validation, uncertainty thresholds, human review, and careful policy design."
+    "The Hugging Face demo is available at https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector. The active Space predictor is the Tiny GenImage Random Forest model from Table 3, using the validation-selected threshold 0.545. The ResNet18 model is retained in the Space only to produce the model-attention visualization. The local ensemble and other models are retained as comparison results. The GitHub appendix is available at https://github.com/Theo9598/ai-vs-real-image-detector. A real deployment would require larger multi-source validation, uncertainty thresholds, human review, and careful policy design."
 )
 
 h("7 Conclusion")

@@ -14,15 +14,17 @@ license: mit
 
 This Space hosts a course project demo for detecting whether an uploaded image is AI-generated or real.
 
-The active detector loads the Tiny GenImage 5k ResNet18 transfer-learning model used in the final report. It was fine-tuned for 10 epochs and uses the validation-selected threshold from that experiment.
+The active detector loads the Tiny GenImage 5k Random Forest model used in the final report. It uses handcrafted color, edge, noise, frequency, and blockiness features, then applies the validation-selected threshold from that experiment.
 
 Active Space model performance on the Tiny GenImage 5k held-out test set:
 
-- Accuracy: 78.5%
-- Precision for fake / AI-generated class: 0.755
-- Recall for fake / AI-generated class: 0.844
-- F1 for fake / AI-generated class: 0.797
-- ROC-AUC: 0.865
+- Accuracy: 98.2%
+- Precision for fake / AI-generated class: 0.967
+- Recall for fake / AI-generated class: 0.998
+- F1 for fake / AI-generated class: 0.982
+- ROC-AUC: 1.000
+
+The ResNet18 transfer-learning model remains in the Space only to generate the attention visualization shown below the Random Forest prediction.
 
 The report also includes the local project dataset ensemble as a comparison result:
 

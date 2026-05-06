@@ -6,6 +6,8 @@ IEOR 142A Spring 2026 project: an interactive detector that estimates whether an
 
 Hugging Face Space: <https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector>
 
+The deployed Space uses the Tiny GenImage Random Forest model for the final prediction and uses ResNet18 only for the attention visualization.
+
 ## Dataset
 
 The raw image dataset is hosted separately on Google Drive:
@@ -22,7 +24,17 @@ data/
 
 ## Results
 
-Held-out test performance for the validation-weighted ensemble:
+Active Space model performance on the Tiny GenImage 5k held-out test set:
+
+| Metric | Result |
+|---|---:|
+| Accuracy | 98.2% |
+| Precision, fake / AI class | 0.967 |
+| Recall, fake / AI class | 0.998 |
+| F1, fake / AI class | 0.982 |
+| ROC-AUC | 1.000 |
+
+Local held-out test performance for the validation-weighted ensemble:
 
 | Metric | Result |
 |---|---:|

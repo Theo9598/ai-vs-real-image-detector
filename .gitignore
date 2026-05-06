@@ -18,4 +18,6 @@ venv/
 # Avoid duplicating model weights already stored for the Space app
 results/*.pt
 results/**/*.pt
+results/*.joblib
+results/**/*.joblib
 reports/submission_report_final_ai_detector_tinygenimage.pdf

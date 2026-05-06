@@ -1,0 +1,18 @@
+{
+  "model": "Random Forest (handcrafted features)",
+  "dataset": "TheKernel01/Tiny-GenImage",
+  "threshold": 0.5449999999999999,
+  "feature_count": 63,
+  "fit_rows": 3600,
+  "validation_rows": 400,
+  "test_rows": 1000,
+  "metrics": {
+    "threshold": 0.5449999999999999,
+    "accuracy": 0.982,
+    "precision_ai": 0.9670542635658915,
+    "recall_ai": 0.998,
+    "f1_ai": 0.9822834645669292,
+    "roc_auc": 0.999888
+  },
+  "seed": 142
+}
