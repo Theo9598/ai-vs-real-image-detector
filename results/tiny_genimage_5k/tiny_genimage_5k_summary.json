@@ -1,0 +1,53 @@
+{
+  "dataset": "TheKernel01/Tiny-GenImage",
+  "design": "4000 train-pool rows from train split, internally split into 3600 fit and 400 validation; 1000 held-out rows from validation split used as test.",
+  "split_summary": {
+    "fit": {
+      "fake": 1800,
+      "real": 1800
+    },
+    "validation": {
+      "real": 200,
+      "fake": 200
+    },
+    "test": {
+      "real": 500,
+      "fake": 500
+    }
+  },
+  "results": [
+    {
+      "model_family": "Course ML",
+      "model": "Random Forest (handcrafted features)",
+      "split": "test",
+      "threshold": 0.5449999999999999,
+      "accuracy": 0.982,
+      "precision_ai": 0.9670542635658915,
+      "recall_ai": 0.998,
+      "f1_ai": 0.9822834645669292,
+      "roc_auc": 0.999888
+    },
+    {
+      "model_family": "Course ML",
+      "model": "Logistic Regression (handcrafted features)",
+      "split": "test",
+      "threshold": 0.4049999999999999,
+      "accuracy": 0.789,
+      "precision_ai": 0.7166416791604198,
+      "recall_ai": 0.956,
+      "f1_ai": 0.8191945158526135,
+      "roc_auc": 0.7590280000000001
+    },
+    {
+      "model_family": "Transfer Learning",
+      "model": "ResNet18 transfer learning",
+      "split": "test",
+      "threshold": 0.7949999999999999,
+      "accuracy": 0.785,
+      "precision_ai": 0.7549194991055456,
+      "recall_ai": 0.844,
+      "f1_ai": 0.7969782813975449,
+      "roc_auc": 0.864976
+    }
+  ]
+}

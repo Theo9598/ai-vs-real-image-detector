@@ -34,11 +34,29 @@ Held-out test performance for the validation-weighted ensemble:
 
 Confusion matrix with class order `[real, AI-generated]`: `[[110, 2], [3, 35]]`.
 
+## Tiny GenImage 5k Extension
+
+To test the project on a larger external dataset, we also ran a 5,000-image Tiny GenImage subset experiment:
+
+- fit: 3,600 images
+- validation: 400 images
+- held-out test: 1,000 images
+
+| Model | Accuracy | F1 | ROC-AUC |
+|---|---:|---:|---:|
+| Random Forest + handcrafted features | 98.2% | 0.982 | 1.000 |
+| Logistic Regression + handcrafted features | 78.9% | 0.819 | 0.759 |
+| ResNet18 transfer learning, 10 epochs | 78.5% | 0.797 | 0.865 |
+
+Main learning: feature engineering and strong baselines matter. A deeper transfer-learning model does not automatically outperform a well-matched classical model.
+
 ## Files
 
 - `train_ai_detector.py`: local training and evaluation script.
+- `compare_course_vs_transfer.py`: local course-model vs transfer-learning comparison.
+- `tiny_genimage_5k_compare.py`: Tiny GenImage 5k comparison script.
 - `hf_space_ai_detector/app.py`: Hugging Face Space inference app.
 - `results/`: evaluation artifacts, plots, predictions, and metrics.
-- `IEOR142A_Project_Report_Formatted_Appendix.docx`: formatted project report.
+- `reports/submission_report_final_ai_detector_tinygenimage.pdf`: final project report.
 
 The raw image dataset is not committed to keep the repository lightweight.

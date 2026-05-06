@@ -30,6 +30,25 @@ MODEL_ORDER = ["resnet18", "efficientnet_b0", "mobilenet_v3_small", "vit_b_16"]
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+LOCAL_COMPARISON_ROWS = [
+    ["Logistic Regression + handcrafted features", "Course ML", "98.7%", "0.974", "1.000"],
+    ["Random Forest + handcrafted features", "Course ML", "98.7%", "0.974", "1.000"],
+    ["Validation-weighted ensemble", "Final deployed model", "96.7%", "0.933", "0.993"],
+    ["ResNet18", "Transfer learning", "96.0%", "0.919", "0.995"],
+]
+
+TINY_GENIMAGE_ROWS = [
+    ["Random Forest + handcrafted features", "Course ML", "98.2%", "0.982", "1.000"],
+    ["Logistic Regression + handcrafted features", "Course ML", "78.9%", "0.819", "0.759"],
+    ["ResNet18, 10 epochs", "Transfer learning", "78.5%", "0.797", "0.865"],
+]
+
+PROJECT_LINKS = """
+- GitHub appendix: https://github.com/Theo9598/ai-vs-real-image-detector
+- Final report: see `reports/submission_report_final_ai_detector_tinygenimage.pdf` in GitHub
+- Tiny GenImage dataset: https://huggingface.co/datasets/TheKernel01/Tiny-GenImage
+"""
+
 EVAL_TRANSFORM = transforms.Compose(
     [
         transforms.Resize((256, 256)),
@@ -161,26 +180,94 @@ This is a statistical detector, not proof of image origin. The heatmap shows mod
     return text, rounded, attention
 
 
-with gr.Blocks(title="AI vs Real Image Detector", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("# AI vs Real Image Detector")
-    gr.Markdown(
-        "Upload an image to estimate whether it is AI-generated. "
-        "The result is decision support, not proof of image origin."
-    )
-    with gr.Row():
-        with gr.Column(scale=1):
-            image_input = gr.Image(type="pil", label="Upload Image")
-            analyze_button = gr.Button("Analyze", variant="primary")
-        with gr.Column(scale=1):
-            result_text = gr.Markdown(label="Final Result")
-            model_json = gr.JSON(label="Per-model AI Probability")
-            attention_image = gr.Image(label="Model Attention Regions")
+CSS = """
+.main-title {max-width: 980px; margin: 0 auto 10px auto;}
+.note-box {
+    border-left: 4px solid #4b5563;
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 4px;
+}
+"""
 
-    analyze_button.click(
-        fn=analyze,
-        inputs=image_input,
-        outputs=[result_text, model_json, attention_image],
+
+with gr.Blocks(title="AI vs Real Image Detector", theme=gr.themes.Soft(), css=CSS) as demo:
+    gr.Markdown(
+        """
+<div class="main-title">
+
+# AI vs Real Image Detector
+
+IEOR 142A course project demo. Upload an image to estimate whether it is AI-generated.
+The output is statistical decision support, not proof of image origin.
+
+</div>
+"""
     )
+
+    with gr.Tabs():
+        with gr.Tab("Detector"):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    image_input = gr.Image(type="pil", label="Upload Image")
+                    analyze_button = gr.Button("Analyze", variant="primary")
+                with gr.Column(scale=1):
+                    result_text = gr.Markdown(label="Final Result")
+                    model_json = gr.JSON(label="Per-model AI Probability")
+                    attention_image = gr.Image(label="Model Attention Regions")
+
+            analyze_button.click(
+                fn=analyze,
+                inputs=image_input,
+                outputs=[result_text, model_json, attention_image],
+            )
+
+        with gr.Tab("Results"):
+            gr.Markdown(
+                """
+## Model comparison
+
+The deployed detector uses the validation-weighted ensemble trained on the local project dataset.
+For the report, we also compared course-based models against ResNet18 on a Tiny GenImage 5k subset.
+"""
+            )
+            gr.Markdown("### Local project dataset, held-out test")
+            gr.Dataframe(
+                value=LOCAL_COMPARISON_ROWS,
+                headers=["Model", "Type", "Accuracy", "F1, AI/fake", "ROC-AUC"],
+                interactive=False,
+                wrap=True,
+            )
+            gr.Markdown("### Tiny GenImage 5k subset, held-out test")
+            gr.Dataframe(
+                value=TINY_GENIMAGE_ROWS,
+                headers=["Model", "Type", "Accuracy", "F1, fake", "ROC-AUC"],
+                interactive=False,
+                wrap=True,
+            )
+
+        with gr.Tab("Interpretation"):
+            gr.Markdown(
+                """
+## What the project learned
+
+The main lesson is not simply that one model had the highest accuracy. Classical machine learning
+baselines were very strong when images were represented with handcrafted features such as color,
+edge, noise, frequency, and blockiness statistics.
+
+On the Tiny GenImage 5k subset, Random Forest outperformed a 10-epoch ResNet18 fine-tuning run.
+This suggests that low-level image artifacts are highly informative in this dataset, and that model
+complexity alone does not guarantee better performance.
+
+<div class="note-box">
+The model-attention image shows regions that influenced the ResNet18 AI-class score. It should not
+be interpreted as proof that a region is fake or AI-generated.
+</div>
+"""
+            )
+
+        with gr.Tab("Links"):
+            gr.Markdown(PROJECT_LINKS)
 
 
 if __name__ == "__main__":

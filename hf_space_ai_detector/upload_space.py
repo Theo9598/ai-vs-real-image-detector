@@ -23,7 +23,8 @@ def main():
         repo_id=repo_id,
         repo_type="space",
         folder_path=str(FOLDER),
-        commit_message="Deploy AI vs Real Image Detector",
+        commit_message="Update demo with Tiny GenImage comparison",
+        ignore_patterns=["__pycache__/*", "*.pyc"],
     )
     print(f"Done: https://huggingface.co/spaces/{repo_id}")
 

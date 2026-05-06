@@ -1,0 +1,4 @@
+model_family,model,split,threshold,accuracy,precision_ai,recall_ai,f1_ai,roc_auc
+Course ML,Random Forest (handcrafted features),test,0.5449999999999999,0.982,0.9670542635658915,0.998,0.9822834645669292,0.999888
+Course ML,Logistic Regression (handcrafted features),test,0.4049999999999999,0.789,0.7166416791604198,0.956,0.8191945158526135,0.7590280000000001
+Transfer Learning,ResNet18 transfer learning,test,0.7949999999999999,0.785,0.7549194991055456,0.844,0.7969782813975449,0.864976

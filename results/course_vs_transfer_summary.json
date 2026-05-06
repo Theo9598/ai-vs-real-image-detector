@@ -1,0 +1,91 @@
+{
+  "dataset_counts": {
+    "real": 745,
+    "ai": 250
+  },
+  "split_counts": {
+    "train": 695,
+    "validation": 150,
+    "test": 150
+  },
+  "results_file": "G:\\CodexProjects\\New project 3\\results\\course_vs_transfer_comparison.csv",
+  "test_results": [
+    {
+      "model_family": "Course ML",
+      "model": "Logistic Regression (handcrafted features)",
+      "split": "test",
+      "threshold": 0.07,
+      "accuracy": 0.9866666666666667,
+      "precision_ai": 0.95,
+      "recall_ai": 1.0,
+      "f1_ai": 0.9743589743589743,
+      "roc_auc": 1.0
+    },
+    {
+      "model_family": "Course ML",
+      "model": "Random Forest (handcrafted features)",
+      "split": "test",
+      "threshold": 0.29,
+      "accuracy": 0.9866666666666667,
+      "precision_ai": 0.95,
+      "recall_ai": 1.0,
+      "f1_ai": 0.9743589743589743,
+      "roc_auc": 1.0
+    },
+    {
+      "model_family": "Final Ensemble",
+      "model": "Validation-weighted ensemble",
+      "split": "test",
+      "threshold": 0.4549999999999999,
+      "accuracy": 0.9666666666666667,
+      "precision_ai": 0.9459459459459459,
+      "recall_ai": 0.9210526315789473,
+      "f1_ai": 0.9333333333333333,
+      "roc_auc": 0.9929511278195489
+    },
+    {
+      "model_family": "Transfer Learning",
+      "model": "efficientnet_b0",
+      "split": "test",
+      "threshold": 0.4149999999999999,
+      "accuracy": 0.9666666666666667,
+      "precision_ai": 0.9714285714285714,
+      "recall_ai": 0.8947368421052632,
+      "f1_ai": 0.9315068493150684,
+      "roc_auc": 0.9800281954887218
+    },
+    {
+      "model_family": "Transfer Learning",
+      "model": "vit_b_16",
+      "split": "test",
+      "threshold": 0.4799999999999999,
+      "accuracy": 0.96,
+      "precision_ai": 0.9210526315789473,
+      "recall_ai": 0.9210526315789473,
+      "f1_ai": 0.9210526315789473,
+      "roc_auc": 0.993421052631579
+    },
+    {
+      "model_family": "Transfer Learning",
+      "model": "resnet18",
+      "split": "test",
+      "threshold": 0.575,
+      "accuracy": 0.96,
+      "precision_ai": 0.9444444444444444,
+      "recall_ai": 0.8947368421052632,
+      "f1_ai": 0.918918918918919,
+      "roc_auc": 0.9948308270676691
+    },
+    {
+      "model_family": "Transfer Learning",
+      "model": "mobilenet_v3_small",
+      "split": "test",
+      "threshold": 0.3449999999999999,
+      "accuracy": 0.9533333333333334,
+      "precision_ai": 0.918918918918919,
+      "recall_ai": 0.8947368421052632,
+      "f1_ai": 0.9066666666666666,
+      "roc_auc": 0.9868421052631579
+    }
+  ]
+}
