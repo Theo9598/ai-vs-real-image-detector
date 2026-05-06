@@ -57,6 +57,6 @@ Main learning: feature engineering and strong baselines matter. A deeper transfe
 - `tiny_genimage_5k_compare.py`: Tiny GenImage 5k comparison script.
 - `hf_space_ai_detector/app.py`: Hugging Face Space inference app.
 - `results/`: evaluation artifacts, plots, predictions, and metrics.
-- `reports/submission_report_final_ai_detector_tinygenimage.pdf`: final project report.
+- `reports/submission_report_final_ai_detector_tinygenimage_space_aligned.pdf`: final project report.
 
 The raw image dataset is not committed to keep the repository lightweight.

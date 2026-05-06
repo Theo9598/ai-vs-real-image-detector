@@ -1,5 +1,4 @@
 from pathlib import Path
-import json
 
 import gradio as gr
 import numpy as np
@@ -7,12 +6,6 @@ from PIL import Image
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
-from torchvision.models import (
-    EfficientNet_B0_Weights,
-    MobileNet_V3_Small_Weights,
-    ResNet18_Weights,
-    ViT_B_16_Weights,
-)
 
 
 ROOT = Path(__file__).resolve().parent
@@ -20,20 +13,23 @@ MODEL_DIR = ROOT / "models"
 IMAGE_SIZE = 224
 AI_CLASS_ID = 1
 ID_TO_LABEL = {0: "Real", 1: "AI-generated"}
-
-with (MODEL_DIR / "final_results.json").open("r", encoding="utf-8") as f:
-    METADATA = json.load(f)
-
-THRESHOLD = float(METADATA["final_threshold"])
-ENSEMBLE_WEIGHTS = METADATA["ensemble_weights"]
-MODEL_ORDER = ["resnet18", "efficientnet_b0", "mobilenet_v3_small", "vit_b_16"]
+REPORT_MODEL_NAME = "tiny_genimage_resnet18"
+REPORT_MODEL_LABEL = "Tiny GenImage ResNet18, 10 epochs"
+REPORT_THRESHOLD = 0.7949999999999999
+REPORT_METRICS = {
+    "test_accuracy": 0.785,
+    "test_precision_fake": 0.7549,
+    "test_recall_fake": 0.844,
+    "test_f1_fake": 0.797,
+    "test_roc_auc": 0.865,
+}
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 LOCAL_COMPARISON_ROWS = [
     ["Logistic Regression + handcrafted features", "Classical ML", "98.7%", "0.974", "1.000"],
     ["Random Forest + handcrafted features", "Classical ML", "98.7%", "0.974", "1.000"],
-    ["Validation-weighted ensemble", "Final deployed model", "96.7%", "0.933", "0.993"],
+    ["Validation-weighted ensemble", "Local comparison", "96.7%", "0.933", "0.993"],
     ["ResNet18", "Transfer learning", "96.0%", "0.919", "0.995"],
 ]
 
@@ -45,7 +41,7 @@ TINY_GENIMAGE_ROWS = [
 
 PROJECT_LINKS = """
 - GitHub appendix: https://github.com/Theo9598/ai-vs-real-image-detector
-- Final report: see `reports/submission_report_final_ai_detector_tinygenimage.pdf` in GitHub
+- Final report: see `reports/submission_report_final_ai_detector_tinygenimage_space_aligned.pdf` in GitHub
 - Tiny GenImage dataset: https://huggingface.co/datasets/TheKernel01/Tiny-GenImage
 """
 
@@ -60,35 +56,20 @@ EVAL_TRANSFORM = transforms.Compose(
 
 
 def make_model(name: str) -> nn.Module:
-    if name == "resnet18":
+    if name == REPORT_MODEL_NAME:
         model = models.resnet18(weights=None)
         model.fc = nn.Linear(model.fc.in_features, 2)
-        return model
-    if name == "efficientnet_b0":
-        model = models.efficientnet_b0(weights=None)
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, 2)
-        return model
-    if name == "mobilenet_v3_small":
-        model = models.mobilenet_v3_small(weights=None)
-        model.classifier[3] = nn.Linear(model.classifier[3].in_features, 2)
-        return model
-    if name == "vit_b_16":
-        model = models.vit_b_16(weights=None)
-        model.heads.head = nn.Linear(model.heads.head.in_features, 2)
         return model
     raise ValueError(f"Unknown model: {name}")
 
 
 def load_models() -> dict[str, nn.Module]:
-    loaded = {}
-    for name in MODEL_ORDER:
-        model = make_model(name)
-        state = torch.load(MODEL_DIR / f"{name}_best.pt", map_location=DEVICE)
-        model.load_state_dict(state)
-        model.to(DEVICE)
-        model.eval()
-        loaded[name] = model
-    return loaded
+    model = make_model(REPORT_MODEL_NAME)
+    state = torch.load(MODEL_DIR / f"{REPORT_MODEL_NAME}_best.pt", map_location=DEVICE)
+    model.load_state_dict(state)
+    model.to(DEVICE)
+    model.eval()
+    return {REPORT_MODEL_NAME: model}
 
 
 MODELS = load_models()
@@ -97,21 +78,15 @@ MODELS = load_models()
 def predict_probabilities(image: Image.Image) -> tuple[float, dict[str, float]]:
     image = image.convert("RGB")
     x = EVAL_TRANSFORM(image).unsqueeze(0).to(DEVICE)
-    per_model = {}
     with torch.no_grad():
-        for name in MODEL_ORDER:
-            output = MODELS[name](x)
-            prob_ai = torch.softmax(output, dim=1)[0, AI_CLASS_ID].item()
-            per_model[name] = float(prob_ai)
-
-    ensemble_prob = float(sum(ENSEMBLE_WEIGHTS[name] * per_model[name] for name in MODEL_ORDER))
-    per_model["validation_weighted_ensemble"] = ensemble_prob
-    return ensemble_prob, per_model
+        output = MODELS[REPORT_MODEL_NAME](x)
+        prob_ai = torch.softmax(output, dim=1)[0, AI_CLASS_ID].item()
+    return float(prob_ai), {REPORT_MODEL_LABEL: float(prob_ai)}
 
 
 def resnet_attention(image: Image.Image) -> Image.Image:
     """Simple Grad-CAM-style attention overlay for the AI class using ResNet18."""
-    model = MODELS["resnet18"]
+    model = MODELS[REPORT_MODEL_NAME]
     layer = model.layer4[-1]
     activations = []
     gradients = []
@@ -161,7 +136,7 @@ def analyze(image: Image.Image):
         return "Upload an image to run the detector.", {}, None
 
     prob_ai, per_model = predict_probabilities(image)
-    pred_id = int(prob_ai >= THRESHOLD)
+    pred_id = int(prob_ai >= REPORT_THRESHOLD)
     verdict = ID_TO_LABEL[pred_id]
     confidence = prob_ai if pred_id == AI_CLASS_ID else 1.0 - prob_ai
     attention = resnet_attention(image)
@@ -170,9 +145,12 @@ def analyze(image: Image.Image):
 ### Prediction: {verdict}
 
 **AI probability:** {prob_ai:.4f}  
-**Decision threshold:** {THRESHOLD:.4f}  
+**Decision threshold:** {REPORT_THRESHOLD:.4f}  
 **Displayed confidence:** {confidence:.4f}  
-**Final predictor:** validation-weighted ensemble
+**Final predictor:** {REPORT_MODEL_LABEL}
+
+This is the ResNet18 transfer-learning model from the Tiny GenImage 5k experiment in the report.
+Its held-out test results were accuracy {REPORT_METRICS["test_accuracy"]:.3f}, F1 {REPORT_METRICS["test_f1_fake"]:.3f}, and ROC-AUC {REPORT_METRICS["test_roc_auc"]:.3f}.
 
 This is a statistical detector, not proof of image origin. The heatmap shows model attention regions.
 """
@@ -199,6 +177,7 @@ with gr.Blocks(title="AI vs Real Image Detector", theme=gr.themes.Soft(), css=CS
 # AI vs Real Image Detector
 
 IEOR 142A course project demo. Upload an image to estimate whether it is AI-generated.
+The detector uses the Tiny GenImage 5k ResNet18 report model.
 The output is statistical decision support, not proof of image origin.
 
 </div>
@@ -213,7 +192,7 @@ The output is statistical decision support, not proof of image origin.
                     analyze_button = gr.Button("Analyze", variant="primary")
                 with gr.Column(scale=1):
                     result_text = gr.Markdown(label="Final Result")
-                    model_json = gr.JSON(label="Per-model AI Probability")
+                    model_json = gr.JSON(label="Report Model AI Probability")
                     attention_image = gr.Image(label="Model Attention Regions")
 
             analyze_button.click(
@@ -227,8 +206,8 @@ The output is statistical decision support, not proof of image origin.
                 """
 ## Model comparison
 
-The deployed detector uses the validation-weighted ensemble trained on the local project dataset.
-For the report, we also compared classical machine learning baselines against ResNet18 on a Tiny GenImage 5k subset.
+The deployed detector uses the Tiny GenImage 5k ResNet18 model from the report.
+The local-project ensemble is kept below as a comparison result, not as the active Space predictor.
 """
             )
             gr.Markdown("### Local project dataset, held-out test")

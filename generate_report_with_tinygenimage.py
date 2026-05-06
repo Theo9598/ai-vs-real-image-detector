@@ -14,7 +14,7 @@ ROOT = Path(r"G:\CodexProjects\New project 3")
 REPORTS = ROOT / "reports"
 RESULTS = ROOT / "results"
 TINY_RESULTS = RESULTS / "tiny_genimage_5k"
-OUT = REPORTS / "submission_report_final_ai_detector_tinygenimage.pdf"
+OUT = REPORTS / "submission_report_final_ai_detector_tinygenimage_space_aligned.pdf"
 
 
 def register_fonts():
@@ -254,7 +254,7 @@ story.append(
             ["Model", "Type", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
             ["Logistic Regression with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
             ["Random Forest with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
-            ["Validation-weighted ensemble", "Final ensemble", "96.7%", "0.946", "0.921", "0.933", "0.993"],
+            ["Validation-weighted ensemble", "Local ensemble", "96.7%", "0.946", "0.921", "0.933", "0.993"],
             ["ResNet18", "Transfer learning", "96.0%", "0.944", "0.895", "0.919", "0.995"],
         ],
         [1.95 * inch, 1.0 * inch, 0.62 * inch, 0.62 * inch, 0.58 * inch, 0.48 * inch, 0.62 * inch],
@@ -299,7 +299,7 @@ p(
     "In AI-image detection, false positives and false negatives have different costs. A false positive may wrongly label a real image as synthetic, while a false negative may let a fake image pass as real. The deployed Hugging Face Space therefore presents the output as statistical decision support, not proof of image origin. The Grad-CAM-style visualization is also described as model attention rather than evidence of actual AI artifacts."
 )
 p(
-    "The Hugging Face demo is available at https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector. The GitHub appendix is available at https://github.com/Theo9598/ai-vs-real-image-detector. A real deployment would require larger multi-source validation, uncertainty thresholds, human review, and careful policy design."
+    "The Hugging Face demo is available at https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector. The active Space predictor is the Tiny GenImage ResNet18 model from Table 3, using the validation-selected threshold 0.795. The local ensemble and classical models are retained as comparison results. The GitHub appendix is available at https://github.com/Theo9598/ai-vs-real-image-detector. A real deployment would require larger multi-source validation, uncertainty thresholds, human review, and careful policy design."
 )
 
 h("7 Conclusion")

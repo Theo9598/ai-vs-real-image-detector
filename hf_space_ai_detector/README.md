@@ -14,9 +14,17 @@ license: mit
 
 This Space hosts a course project demo for detecting whether an uploaded image is AI-generated or real.
 
-The app loads four fine-tuned transfer-learning models and uses a validation-weighted ensemble selected on a held-out validation set.
+The active detector loads the Tiny GenImage 5k ResNet18 transfer-learning model used in the final report. It was fine-tuned for 10 epochs and uses the validation-selected threshold from that experiment.
 
-Held-out test performance on the local project dataset:
+Active Space model performance on the Tiny GenImage 5k held-out test set:
+
+- Accuracy: 78.5%
+- Precision for fake / AI-generated class: 0.755
+- Recall for fake / AI-generated class: 0.844
+- F1 for fake / AI-generated class: 0.797
+- ROC-AUC: 0.865
+
+The report also includes the local project dataset ensemble as a comparison result:
 
 - Accuracy: 96.7%
 - Precision for AI-generated class: 0.946

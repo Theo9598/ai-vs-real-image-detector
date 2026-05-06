@@ -25,6 +25,13 @@ def main():
         folder_path=str(FOLDER),
         commit_message="Update demo with Tiny GenImage comparison",
         ignore_patterns=["__pycache__/*", "*.pyc"],
+        delete_patterns=[
+            "models/resnet18_best.pt",
+            "models/efficientnet_b0_best.pt",
+            "models/mobilenet_v3_small_best.pt",
+            "models/vit_b_16_best.pt",
+            "models/final_results.json",
+        ],
     )
     print(f"Done: https://huggingface.co/spaces/{repo_id}")
 
