@@ -14,7 +14,7 @@ ROOT = Path(r"G:\CodexProjects\New project 3")
 REPORTS = ROOT / "reports"
 RESULTS = ROOT / "results"
 TINY_RESULTS = RESULTS / "tiny_genimage_5k"
-OUT = REPORTS / "submission_report_final_ai_detector_tinygenimage_space_aligned.pdf"
+OUT = REPORTS / "142A_final_project_ai_detector.pdf"
 
 
 def register_fonts():
