@@ -1,7 +1,7 @@
 model_family,model,split,threshold,accuracy,precision_ai,recall_ai,f1_ai,roc_auc
-Course ML,Logistic Regression (handcrafted features),validation,0.07,1.0,1.0,1.0,1.0,1.0
-Course ML,Random Forest (handcrafted features),validation,0.29,1.0,1.0,1.0,1.0,1.0
-Final Ensemble,Validation-weighted ensemble,validation,0.4549999999999999,1.0,1.0,1.0,1.0,1.0
+Classical ML,Logistic Regression (handcrafted features),validation,0.07,1.0,1.0,1.0,1.0,1.0
+Classical ML,Random Forest (handcrafted features),validation,0.29,1.0,1.0,1.0,1.0,1.0
+Local Ensemble,Validation-weighted ensemble,validation,0.4549999999999999,1.0,1.0,1.0,1.0,1.0
 Transfer Learning,efficientnet_b0,validation,0.4149999999999999,1.0,1.0,1.0,1.0,1.0
 Transfer Learning,vit_b_16,validation,0.4799999999999999,0.9933333333333333,0.9743589743589743,1.0,0.987012987012987,0.99953007518797
 Transfer Learning,mobilenet_v3_small,validation,0.3449999999999999,0.9933333333333333,1.0,0.9736842105263158,0.9866666666666667,0.9992951127819548

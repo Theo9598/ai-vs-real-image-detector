@@ -215,12 +215,12 @@ def train_course_models(df: pd.DataFrame):
         val_prob = model.predict_proba(x_val)[:, AI_CLASS_ID]
         threshold = best_threshold(y_val, val_prob)
         val_metrics = metric_dict(y_val, val_prob, threshold)
-        val_metrics.update({"model": name, "model_family": "Course ML", "split": "validation"})
+        val_metrics.update({"model": name, "model_family": "Classical ML", "split": "validation"})
         rows.append(val_metrics)
 
         test_prob = model.predict_proba(x_test)[:, AI_CLASS_ID]
         test_metrics = metric_dict(y_test, test_prob, threshold)
-        test_metrics.update({"model": name, "model_family": "Course ML", "split": "test"})
+        test_metrics.update({"model": name, "model_family": "Classical ML", "split": "test"})
         rows.append(test_metrics)
 
     return pd.DataFrame(rows)
@@ -343,12 +343,12 @@ def evaluate_transfer_models(df: pd.DataFrame):
         val_ensemble = np.average(np.vstack([val_probs_by_model[name] for name in order]), axis=0, weights=weights)
         ensemble_threshold = best_threshold(y_val_ref, val_ensemble)
         val_metrics = metric_dict(y_val_ref, val_ensemble, ensemble_threshold)
-        val_metrics.update({"model": "Validation-weighted ensemble", "model_family": "Final Ensemble", "split": "validation"})
+        val_metrics.update({"model": "Validation-weighted ensemble", "model_family": "Local Ensemble", "split": "validation"})
         rows.append(val_metrics)
 
         test_ensemble = np.average(np.vstack([test_probs_by_model[name] for name in order]), axis=0, weights=weights)
         test_metrics = metric_dict(y_test_ref, test_ensemble, ensemble_threshold)
-        test_metrics.update({"model": "Validation-weighted ensemble", "model_family": "Final Ensemble", "split": "test"})
+        test_metrics.update({"model": "Validation-weighted ensemble", "model_family": "Local Ensemble", "split": "test"})
         rows.append(test_metrics)
 
         cm = confusion_matrix(y_test_ref, test_ensemble >= ensemble_threshold, labels=[0, 1])
@@ -383,9 +383,9 @@ def main():
     test_results = all_results[all_results["split"] == "test"].copy()
     plt.figure(figsize=(9, 4.8))
     colors = {
-        "Course ML": "#6f6f6f",
+        "Classical ML": "#6f6f6f",
         "Transfer Learning": "#2f2f2f",
-        "Final Ensemble": "#000000",
+        "Local Ensemble": "#000000",
     }
     bar_colors = [colors.get(family, "#444444") for family in test_results["model_family"]]
     plt.barh(test_results["model"], test_results["f1_ai"], color=bar_colors)

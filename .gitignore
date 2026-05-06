@@ -20,4 +20,3 @@ results/*.pt
 results/**/*.pt
 results/*.joblib
 results/**/*.joblib
-reports/submission_report_final_ai_detector_tinygenimage.pdf

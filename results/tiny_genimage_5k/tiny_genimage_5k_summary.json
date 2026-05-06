@@ -17,7 +17,7 @@
   },
   "results": [
     {
-      "model_family": "Course ML",
+      "model_family": "Classical ML",
       "model": "Random Forest (handcrafted features)",
       "split": "test",
       "threshold": 0.5449999999999999,
@@ -28,7 +28,7 @@
       "roc_auc": 0.999888
     },
     {
-      "model_family": "Course ML",
+      "model_family": "Classical ML",
       "model": "Logistic Regression (handcrafted features)",
       "split": "test",
       "threshold": 0.4049999999999999,

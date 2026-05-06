@@ -339,7 +339,7 @@ def main():
         threshold = best_threshold(y_val, val_prob)
         test_prob = model.predict_proba(x_test)[:, AI_CLASS_ID]
         metrics = metric_dict(y_test, test_prob, threshold)
-        metrics.update({"model": model_name, "model_family": "Course ML", "split": "test"})
+        metrics.update({"model": model_name, "model_family": "Classical ML", "split": "test"})
         rows.append(metrics)
         print(model_name, metrics)
 
@@ -354,7 +354,7 @@ def main():
     ].sort_values("f1_ai", ascending=False)
     results.to_csv(OUT_DIR / "tiny_genimage_5k_model_comparison.csv", index=False)
 
-    colors = {"Course ML": "#1f77b4", "Transfer Learning": "#ff7f0e"}
+    colors = {"Classical ML": "#1f77b4", "Transfer Learning": "#ff7f0e"}
     plt.figure(figsize=(7.6, 3.4))
     plt.barh(results["model"], results["f1_ai"], color=[colors.get(x, "#2ca02c") for x in results["model_family"]])
     plt.xlabel("Tiny GenImage 1k test F1 for fake class")
