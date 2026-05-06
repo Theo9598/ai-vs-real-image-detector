@@ -31,15 +31,15 @@ MODEL_ORDER = ["resnet18", "efficientnet_b0", "mobilenet_v3_small", "vit_b_16"]
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 LOCAL_COMPARISON_ROWS = [
-    ["Logistic Regression + handcrafted features", "Course ML", "98.7%", "0.974", "1.000"],
-    ["Random Forest + handcrafted features", "Course ML", "98.7%", "0.974", "1.000"],
+    ["Logistic Regression + handcrafted features", "Classical ML", "98.7%", "0.974", "1.000"],
+    ["Random Forest + handcrafted features", "Classical ML", "98.7%", "0.974", "1.000"],
     ["Validation-weighted ensemble", "Final deployed model", "96.7%", "0.933", "0.993"],
     ["ResNet18", "Transfer learning", "96.0%", "0.919", "0.995"],
 ]
 
 TINY_GENIMAGE_ROWS = [
-    ["Random Forest + handcrafted features", "Course ML", "98.2%", "0.982", "1.000"],
-    ["Logistic Regression + handcrafted features", "Course ML", "78.9%", "0.819", "0.759"],
+    ["Random Forest + handcrafted features", "Classical ML", "98.2%", "0.982", "1.000"],
+    ["Logistic Regression + handcrafted features", "Classical ML", "78.9%", "0.819", "0.759"],
     ["ResNet18, 10 epochs", "Transfer learning", "78.5%", "0.797", "0.865"],
 ]
 
@@ -228,7 +228,7 @@ The output is statistical decision support, not proof of image origin.
 ## Model comparison
 
 The deployed detector uses the validation-weighted ensemble trained on the local project dataset.
-For the report, we also compared course-based models against ResNet18 on a Tiny GenImage 5k subset.
+For the report, we also compared classical machine learning baselines against ResNet18 on a Tiny GenImage 5k subset.
 """
             )
             gr.Markdown("### Local project dataset, held-out test")

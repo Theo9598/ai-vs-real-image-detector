@@ -184,7 +184,7 @@ def add_figure(path, width, height, caption):
 
 REPORTS.mkdir(exist_ok=True)
 
-story.append(Paragraph("AI-Generated vs. Real Image Detection with Course-Based Baselines", styles["RefTitle"]))
+story.append(Paragraph("AI-Generated vs. Real Image Detection", styles["RefTitle"]))
 for meta in [
     "Course: IEOR 142A Spring 2026 Project",
     "Team: Theo Zhang",
@@ -197,7 +197,7 @@ for meta in [
 
 h("Abstract")
 p(
-    "We study AI-generated image detection as a supervised binary classification problem. Each input is an image and each label is either real or AI-generated. To align the project with IEOR 142A, we compare classical course-based models with a representative transfer-learning model. The course-based models are Logistic Regression and Random Forest trained on handcrafted color, edge, noise, frequency, and blockiness features. The transfer-learning model is ResNet18 fine-tuned from pretrained image weights. On the original 995-image local dataset, Random Forest and Logistic Regression both perform strongly, while a validation-weighted transfer-learning ensemble achieves 96.7% held-out test accuracy. To test whether the conclusion depends on the small local dataset, we run a second experiment on a 5,000-image Tiny GenImage subset: 3,600 fit images, 400 validation images, and 1,000 held-out test images. On this larger subset, Random Forest reaches 98.2% test accuracy and 0.982 F1, while Logistic Regression reaches 78.9% accuracy and ResNet18 fine-tuned for 10 epochs reaches 78.5% accuracy. The main learning is that stronger-looking neural networks do not automatically outperform classical baselines; feature engineering, validation design, and careful interpretation are central to credible machine learning."
+    "We study AI-generated image detection as a supervised binary classification problem. Each input is an image and each label is either real or AI-generated. To connect the project with IEOR 142A, we compare classical machine learning baselines with a representative transfer-learning model. The classical baselines are Logistic Regression and Random Forest trained on handcrafted color, edge, noise, frequency, and blockiness features. The transfer-learning model is ResNet18 fine-tuned from pretrained image weights. On the original 995-image local dataset, Random Forest and Logistic Regression both perform strongly, while a validation-weighted transfer-learning ensemble achieves 96.7% held-out test accuracy. To test whether the conclusion depends on the small local dataset, we run a second experiment on a 5,000-image Tiny GenImage subset: 3,600 fit images, 400 validation images, and 1,000 held-out test images. On this larger subset, Random Forest reaches 98.2% test accuracy and 0.982 F1, while Logistic Regression reaches 78.9% accuracy and ResNet18 fine-tuned for 10 epochs reaches 78.5% accuracy. The main learning is that stronger-looking neural networks do not automatically outperform classical baselines; feature engineering, validation design, and careful interpretation are central to credible machine learning."
 )
 
 h("1 Motivation and Learning Problem")
@@ -229,7 +229,7 @@ story.append(
 )
 
 h("3 Methodology")
-sh("Course-based models.")
+sh("Classical machine learning baselines.")
 p(
     "For Logistic Regression and Random Forest, raw images are first converted into handcrafted numerical features. These features include RGB color statistics, grayscale histograms, edge-strength statistics, noise residual statistics, frequency-domain energy ratios from the Fourier spectrum, and blockiness indicators. Logistic Regression learns a linear decision boundary on these features. Random Forest trains an ensemble of decision trees and can capture nonlinear interactions among the same features."
 )
@@ -245,15 +245,15 @@ p(
 h("4 Results")
 sh("Original local dataset.")
 p(
-    "On the local dataset, the course-based models perform surprisingly well. Logistic Regression and Random Forest both achieve 98.7% test accuracy and 0.974 AI-class F1. The validation-weighted transfer-learning ensemble achieves 96.7% accuracy, 0.933 F1, and 0.993 ROC-AUC. This suggests that the local data contains low-level features that are already highly informative."
+    "On the local dataset, the classical baselines perform surprisingly well. Logistic Regression and Random Forest both achieve 98.7% test accuracy and 0.974 AI-class F1. The validation-weighted transfer-learning ensemble achieves 96.7% accuracy, 0.933 F1, and 0.993 ROC-AUC. This suggests that the local data contains low-level features that are already highly informative."
 )
 story.append(Paragraph("Table 2. Local held-out test comparison.", styles["RefCaption"]))
 story.append(
     table(
         [
             ["Model", "Type", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
-            ["Logistic Regression with handcrafted features", "Course ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
-            ["Random Forest with handcrafted features", "Course ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
+            ["Logistic Regression with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
+            ["Random Forest with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
             ["Validation-weighted ensemble", "Final ensemble", "96.7%", "0.946", "0.921", "0.933", "0.993"],
             ["ResNet18", "Transfer learning", "96.0%", "0.944", "0.895", "0.919", "0.995"],
         ],
@@ -271,8 +271,8 @@ story.append(
     table(
         [
             ["Model", "Type", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
-            ["Random Forest with handcrafted features", "Course ML", "98.2%", "0.967", "0.998", "0.982", "1.000"],
-            ["Logistic Regression with handcrafted features", "Course ML", "78.9%", "0.717", "0.956", "0.819", "0.759"],
+            ["Random Forest with handcrafted features", "Classical ML", "98.2%", "0.967", "0.998", "0.982", "1.000"],
+            ["Logistic Regression with handcrafted features", "Classical ML", "78.9%", "0.717", "0.956", "0.819", "0.759"],
             ["ResNet18 transfer learning, 10 epochs", "Transfer learning", "78.5%", "0.755", "0.844", "0.797", "0.865"],
         ],
         [2.05 * inch, 1.0 * inch, 0.62 * inch, 0.62 * inch, 0.58 * inch, 0.48 * inch, 0.62 * inch],
@@ -304,7 +304,7 @@ p(
 
 h("7 Conclusion")
 p(
-    "This project applies the supervised learning workflow from IEOR 142A to a current image-classification problem. The final message is that careful evaluation matters more than simply adding advanced models. The local experiment and the Tiny GenImage 5k experiment both show that course-based baselines are essential. Random Forest with handcrafted image features is highly competitive, while ResNet18 transfer learning provides a useful but not automatically superior comparison. The project demonstrates data preparation, feature engineering, model comparison, validation-based threshold selection, classifier metrics, deployment, and honest limitation analysis."
+    "This project applies the supervised learning workflow from IEOR 142A to a current image-classification problem. The final message is that careful evaluation matters more than simply adding advanced models. The local experiment and the Tiny GenImage 5k experiment both show that classical baselines are essential. Random Forest with handcrafted image features is highly competitive, while ResNet18 transfer learning provides a useful but not automatically superior comparison. The project demonstrates data preparation, feature engineering, model comparison, validation-based threshold selection, classifier metrics, deployment, and honest limitation analysis."
 )
 
 h("Appendix")
@@ -319,7 +319,7 @@ def footer(canvas, doc):
     canvas.setFillColor(colors.black)
     canvas.drawCentredString(letter[0] / 2, 0.42 * inch, str(doc.page))
     canvas.setFont(BASE_FONT, 8.5)
-    canvas.drawCentredString(letter[0] / 2, 0.22 * inch, "AI-Generated vs. Real Image Detection with Course-Based Baselines")
+    canvas.drawCentredString(letter[0] / 2, 0.22 * inch, "AI-Generated vs. Real Image Detection")
     canvas.restoreState()
 
 

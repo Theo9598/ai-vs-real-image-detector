@@ -24,7 +24,7 @@ Held-out test performance on the local project dataset:
 - F1 for AI-generated class: 0.933
 - ROC-AUC: 0.993
 
-The report also includes a Tiny GenImage 5k experiment comparing course-based models with ResNet18:
+The report also includes a Tiny GenImage 5k experiment comparing classical machine learning baselines with ResNet18:
 
 | Model | Accuracy | F1 | ROC-AUC |
 |---|---:|---:|---:|
