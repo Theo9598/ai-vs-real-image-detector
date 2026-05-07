@@ -1,4 +1,5 @@
 from pathlib import Path
+import html
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -7,14 +8,24 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import (
+    Image,
+    KeepTogether,
+    PageBreak,
+    Paragraph,
+    Preformatted,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 
 ROOT = Path(r"G:\CodexProjects\New project 3")
 REPORTS = ROOT / "reports"
 RESULTS = ROOT / "results"
 TINY_RESULTS = RESULTS / "tiny_genimage_5k"
-OUT = REPORTS / "142A_final_project_ai_detector.pdf"
+OUT = REPORTS / "142A_final_project_ai_detector_appendix.pdf"
 
 
 def register_fonts():
@@ -22,12 +33,12 @@ def register_fonts():
     try:
         pdfmetrics.registerFont(TTFont("TimesNewRoman", str(font_dir / "times.ttf")))
         pdfmetrics.registerFont(TTFont("TimesNewRoman-Bold", str(font_dir / "timesbd.ttf")))
-        return "TimesNewRoman", "TimesNewRoman-Bold"
+        return "TimesNewRoman", "TimesNewRoman-Bold", "Courier"
     except Exception:
-        return "Times-Roman", "Times-Bold"
+        return "Times-Roman", "Times-Bold", "Courier"
 
 
-BASE_FONT, BOLD_FONT = register_fonts()
+BASE_FONT, BOLD_FONT, CODE_FONT = register_fonts()
 
 styles = getSampleStyleSheet()
 styles.add(
@@ -51,8 +62,8 @@ styles.add(
         leading=16,
         alignment=TA_LEFT,
         textColor=colors.black,
-        spaceBefore=10,
-        spaceAfter=5,
+        spaceBefore=9,
+        spaceAfter=4,
     )
 )
 styles.add(
@@ -60,11 +71,11 @@ styles.add(
         name="RefSubheading",
         parent=styles["Heading2"],
         fontName=BOLD_FONT,
-        fontSize=11.3,
+        fontSize=11.5,
         leading=14,
         alignment=TA_LEFT,
         textColor=colors.black,
-        spaceBefore=6,
+        spaceBefore=5,
         spaceAfter=3,
     )
 )
@@ -73,12 +84,12 @@ styles.add(
         name="RefBody",
         parent=styles["BodyText"],
         fontName=BASE_FONT,
-        fontSize=10.05,
-        leading=13.9,
-        firstLineIndent=0.3 * inch,
+        fontSize=10.0,
+        leading=13.4,
+        firstLineIndent=0.28 * inch,
         alignment=TA_LEFT,
         textColor=colors.black,
-        spaceAfter=4,
+        spaceAfter=3.3,
     )
 )
 styles.add(
@@ -86,8 +97,8 @@ styles.add(
         name="RefNoIndent",
         parent=styles["BodyText"],
         fontName=BASE_FONT,
-        fontSize=10.05,
-        leading=13.9,
+        fontSize=10.0,
+        leading=13.4,
         alignment=TA_LEFT,
         textColor=colors.black,
         spaceAfter=3,
@@ -98,8 +109,8 @@ styles.add(
         name="RefSmall",
         parent=styles["BodyText"],
         fontName=BASE_FONT,
-        fontSize=7.8,
-        leading=9.2,
+        fontSize=7.6,
+        leading=9.0,
         alignment=TA_LEFT,
         textColor=colors.black,
     )
@@ -109,8 +120,8 @@ styles.add(
         name="RefSmallBold",
         parent=styles["BodyText"],
         fontName=BOLD_FONT,
-        fontSize=7.8,
-        leading=9.2,
+        fontSize=7.6,
+        leading=9.0,
         alignment=TA_CENTER,
         textColor=colors.black,
     )
@@ -120,12 +131,25 @@ styles.add(
         name="RefCaption",
         parent=styles["BodyText"],
         fontName=BASE_FONT,
-        fontSize=8.3,
-        leading=10.3,
+        fontSize=8.1,
+        leading=10.0,
         alignment=TA_CENTER,
         textColor=colors.black,
-        spaceBefore=3,
-        spaceAfter=5,
+        spaceBefore=2,
+        spaceAfter=4,
+    )
+)
+styles.add(
+    ParagraphStyle(
+        name="RefCode",
+        parent=styles["Code"],
+        fontName=CODE_FONT,
+        fontSize=5.2,
+        leading=6.1,
+        leftIndent=0,
+        rightIndent=0,
+        textColor=colors.black,
+        splitLongWords=True,
     )
 )
 
@@ -166,8 +190,8 @@ def table(data, widths, numeric_from=None):
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("LEFTPADDING", (0, 0), (-1, -1), 4),
         ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
     ]
     for row_idx in range(1, len(data)):
         ts.append(("LINEBELOW", (0, row_idx), (-1, row_idx), 0.25, colors.HexColor("#BFBFBF")))
@@ -182,6 +206,17 @@ def add_figure(path, width, height, caption):
         story.append(KeepTogether([Image(str(path), width=width, height=height), Paragraph(caption, styles["RefCaption"])]))
 
 
+def add_code_file(relative_path):
+    path = ROOT / relative_path
+    if not path.exists():
+        return
+    story.append(PageBreak())
+    h(f"Appendix Code: {relative_path}")
+    code = path.read_text(encoding="utf-8", errors="replace")
+    # Escape XML-sensitive characters because ReportLab parses Preformatted text.
+    story.append(Preformatted(html.escape(code, quote=False), styles["RefCode"], maxLineLength=118))
+
+
 REPORTS.mkdir(exist_ok=True)
 
 story.append(Paragraph("AI-Generated vs. Real Image Detection", styles["RefTitle"]))
@@ -190,81 +225,63 @@ for meta in [
     "Team: Theo Zhang",
     "Interactive demo: https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector",
     "GitHub appendix: https://github.com/Theo9598/ai-vs-real-image-detector",
-    "Dataset: local dataset and Tiny GenImage 5k subset from https://huggingface.co/datasets/TheKernel01/Tiny-GenImage",
-    "Presentation recording: [Insert accessible recording link before Gradescope submission]",
+    "Primary dataset: Tiny GenImage 5k subset from https://huggingface.co/datasets/TheKernel01/Tiny-GenImage",
+    "Local comparison dataset: course project Google Drive dataset",
 ]:
     pn(meta)
 
 h("Abstract")
 p(
-    "We study AI-generated image detection as a supervised binary classification problem. Each input is an image and each label is either real or AI-generated. To connect the project with IEOR 142A, we compare classical machine learning baselines with a representative transfer-learning model. The classical baselines are Logistic Regression and Random Forest trained on handcrafted color, edge, noise, frequency, and blockiness features. The transfer-learning model is ResNet18 fine-tuned from pretrained image weights. On the original 995-image local dataset, Random Forest and Logistic Regression both perform strongly, while a validation-weighted transfer-learning ensemble achieves 96.7% held-out test accuracy. To test whether the conclusion depends on the small local dataset, we run a second experiment on a 5,000-image Tiny GenImage subset: 3,600 fit images, 400 validation images, and 1,000 held-out test images. On this larger subset, Random Forest reaches 98.2% test accuracy and 0.982 F1, while Logistic Regression reaches 78.9% accuracy and ResNet18 fine-tuned for 10 epochs reaches 78.5% accuracy. The main learning is that stronger-looking neural networks do not automatically outperform classical baselines; feature engineering, validation design, and careful interpretation are central to credible machine learning."
+    "This project studies AI-generated image detection as a supervised binary classification problem. The deployed model is a Random Forest trained on handcrafted image features from a 5,000-image Tiny GenImage subset. I compare it with Logistic Regression and a 10-epoch ResNet18 transfer-learning model, using validation-only threshold selection and a held-out 1,000-image test set. Random Forest achieves 98.2% test accuracy and 0.982 fake-class F1, outperforming Logistic Regression and ResNet18 on this subset. The main learning is that simple course models can be highly competitive when the feature representation fits the data, but the detector still has important generalization limits."
 )
 
-h("1 Motivation and Learning Problem")
+h("1 Problem and Data")
 p(
-    "AI-generated images are now common in social media, advertising, education, and online news. A visually convincing synthetic image can be harmless in a creative setting, but it can also create trust and misinformation problems when viewers assume the image is a real photograph. This project studies a practical screening use-case: a user uploads an image and receives a probability estimate for whether the image appears AI-generated."
-)
-p(
-    "We formulate the task using the supervised learning framework from class. Each example is a pair (Xi, Yi), where Xi is an RGB image and Yi is a binary label: 0 for real and 1 for AI-generated. A model outputs a score or probability for the AI-generated class. A decision threshold then converts that probability into a final predicted label, creating a tradeoff between false positives and false negatives."
-)
-
-h("2 Data")
-p(
-    "The first dataset is the local project dataset with 995 total images: 250 AI-generated images and 745 real images across animals, city, food, nature, and people. We use a stratified 70/15/15 train/validation/test split, resulting in 695 training images, 150 validation images, and 150 held-out test images."
-)
-p(
-    "The second dataset is Tiny GenImage from Hugging Face, a smaller version of GenImage. For a computationally manageable external experiment, we use 5,000 images. We take 4,000 rows from the Tiny GenImage train split, then internally split them into 3,600 fit images and 400 validation images. We take 1,000 rows from the Tiny GenImage validation split as a held-out test set. The Tiny GenImage experiment is balanced: the fit set contains 1,800 real and 1,800 fake images, the validation set contains 200 real and 200 fake images, and the test set contains 500 real and 500 fake images."
+    "The task is binary classification: label 0 means real and label 1 means AI-generated. The final demo uses Tiny GenImage because it is larger and more relevant to the final experiment than the small local folder dataset. I use 3,600 Tiny GenImage examples for fitting, 400 for validation, and 1,000 held-out examples for final testing. The Google Drive dataset with 995 images is kept as a smaller local comparison experiment, not as the active deployed model."
 )
 story.append(Paragraph("Table 1. Dataset protocols.", styles["RefCaption"]))
 story.append(
     table(
         [
-            ["Dataset", "Fit / Train", "Validation", "Test", "Purpose"],
-            ["Local dataset", "695", "150", "150", "Main project training and deployed detector."],
-            ["Tiny GenImage 5k", "3,600", "400", "1,000", "Larger external comparison of course models vs. ResNet18."],
+            ["Dataset", "Fit / Train", "Validation", "Test", "Role in project"],
+            ["Tiny GenImage 5k", "3,600", "400", "1,000", "Primary experiment and deployed Random Forest model."],
+            ["Local Google Drive dataset", "695", "150", "150", "Smaller comparison experiment and sanity check."],
         ],
-        [1.15 * inch, 0.75 * inch, 0.75 * inch, 0.7 * inch, 3.1 * inch],
+        [1.25 * inch, 0.75 * inch, 0.75 * inch, 0.65 * inch, 3.0 * inch],
         numeric_from=1,
     )
 )
 
-h("3 Methodology")
-sh("Classical machine learning baselines.")
+h("2 Models")
+sh("Random Forest with handcrafted features.")
 p(
-    "For Logistic Regression and Random Forest, raw images are first converted into handcrafted numerical features. These features include RGB color statistics, grayscale histograms, edge-strength statistics, noise residual statistics, frequency-domain energy ratios from the Fourier spectrum, and blockiness indicators. Logistic Regression learns a linear decision boundary on these features. Random Forest trains an ensemble of decision trees and can capture nonlinear interactions among the same features."
+    "Random Forest is the final deployed model. Each uploaded image is first converted into 63 handcrafted numerical features. The forest contains many decision trees; each tree votes using different feature splits, and the final probability is the average vote. This is useful here because the relationship between image artifacts and the fake label is nonlinear."
 )
-sh("Transfer-learning model.")
-p(
-    "For the neural-network comparison, we use ResNet18 as a representative transfer-learning model. ResNet18 starts from ImageNet-pretrained weights, then replaces the final classification layer with a two-class output layer. On Tiny GenImage, we fine-tune ResNet18 for 10 epochs using minibatches, cross-entropy loss, AdamW, and validation-based threshold selection. This keeps the comparison focused: classical feature engineering versus a standard pretrained CNN."
-)
-sh("Validation and leakage prevention.")
-p(
-    "All thresholds are selected using validation data only. The held-out test sets are not used to choose thresholds, model weights, or the best model. This is an important part of the project because a high accuracy number is not meaningful if the test set was used during model selection."
-)
-
-h("4 Results")
-sh("Original local dataset.")
-p(
-    "On the local dataset, the classical baselines perform surprisingly well. Logistic Regression and Random Forest both achieve 98.7% test accuracy and 0.974 AI-class F1. The validation-weighted transfer-learning ensemble achieves 96.7% accuracy, 0.933 F1, and 0.993 ROC-AUC. This suggests that the local data contains low-level features that are already highly informative."
-)
-story.append(Paragraph("Table 2. Local held-out test comparison.", styles["RefCaption"]))
+story.append(Paragraph("Table 2. Random Forest feature groups.", styles["RefCaption"]))
 story.append(
     table(
         [
-            ["Model", "Type", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC"],
-            ["Logistic Regression with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
-            ["Random Forest with handcrafted features", "Classical ML", "98.7%", "0.950", "1.000", "0.974", "1.000"],
-            ["Validation-weighted ensemble", "Local ensemble", "96.7%", "0.946", "0.921", "0.933", "0.993"],
-            ["ResNet18", "Transfer learning", "96.0%", "0.944", "0.895", "0.919", "0.995"],
+            ["Feature group", "What it measures", "Why it may help"],
+            ["Aspect ratio and image size", "Width/height ratio and log image area.", "Some generated or collected images have repeated size/crop patterns."],
+            ["RGB color means and standard deviations", "Average and spread of red, green, and blue channels.", "Synthetic images may have different color balance or smoother color distribution."],
+            ["RGB histograms", "Eight-bin histogram for each color channel.", "Captures whether colors are concentrated, flat, or unusually distributed."],
+            ["Grayscale histogram", "Sixteen-bin brightness distribution.", "Summarizes contrast and lighting patterns."],
+            ["Edge-strength statistics", "Mean, standard deviation, 10th percentile, and 90th percentile of gradient magnitude.", "Generated images can differ in sharpness and fine edge consistency."],
+            ["Noise residual statistics", "Difference between grayscale image and a blurred version.", "Real camera photos often contain sensor/compression noise that synthetic images may smooth out."],
+            ["Frequency energy ratios", "Low, mid, high Fourier energy and high/low ratio.", "AI images can show different texture frequency patterns."],
+            ["Blockiness indicators", "Average edge changes along 8-pixel grid boundaries.", "Detects JPEG-like or generator/compression artifacts."],
         ],
-        [1.95 * inch, 1.0 * inch, 0.62 * inch, 0.62 * inch, 0.58 * inch, 0.48 * inch, 0.62 * inch],
-        numeric_from=2,
+        [1.25 * inch, 2.05 * inch, 3.05 * inch],
     )
 )
-
-sh("Tiny GenImage 5k experiment.")
+sh("Logistic Regression and ResNet18.")
 p(
-    "The Tiny GenImage experiment tests whether the same lesson appears on a larger and more diverse dataset. Random Forest on handcrafted features performs best, with 98.2% accuracy, 0.982 F1, and almost perfect ROC-AUC. Logistic Regression performs moderately, with 78.9% accuracy and 0.819 F1. ResNet18 improves after 10 epochs compared with the earlier quick run, reaching 78.5% accuracy and 0.797 F1, but it still does not match Random Forest on this subset."
+    "Logistic Regression uses the same handcrafted features but learns one linear decision boundary, so it is easier to interpret but less flexible. ResNet18 is a transfer-learning baseline: it starts from ImageNet-pretrained weights, replaces the final layer with a two-class classifier, and is fine-tuned for 10 epochs. In the demo, ResNet18 is not the final predictor; it is kept for the Grad-CAM-style attention image."
+)
+
+h("3 Validation and Results")
+p(
+    "All thresholds are selected using validation data only. The held-out test set is evaluated once after model and threshold choices are fixed. This prevents test-set leakage. On Tiny GenImage, the Random Forest threshold selected on validation is 0.545."
 )
 story.append(Paragraph("Table 3. Tiny GenImage 5k held-out test comparison.", styles["RefCaption"]))
 story.append(
@@ -281,36 +298,42 @@ story.append(
 )
 add_figure(
     TINY_RESULTS / "tiny_genimage_5k_test_f1.png",
-    5.6 * inch,
-    2.5 * inch,
+    5.5 * inch,
+    2.45 * inch,
     "Figure 1. Tiny GenImage 5k F1 comparison. Random Forest performs best on this subset.",
 )
-
-h("5 Interpretation and Learning")
 p(
-    "The most important result is not that Random Forest has the highest number. The important learning is that a classical model can be very strong when the engineered features match the structure of the data. In this project, low-level image statistics such as texture, frequency energy, edge strength, noise residuals, and blockiness appear to separate many real and fake images. Random Forest benefits because it can combine these features through nonlinear decision-tree rules."
-)
-p(
-    "Logistic Regression uses the same features but is less flexible because it learns a linear boundary. Its lower Tiny GenImage performance suggests that the features are useful but not linearly separable in a simple way. ResNet18 is a stronger representation-learning model in principle, but with a 5k subset and 10 epochs it does not automatically outperform a well-matched classical baseline. This supports the course lesson that model selection should be empirical and baseline-driven, not based only on model popularity."
+    "The smaller local dataset gives a similar lesson: classical handcrafted-feature models are strong, while a validation-weighted transfer-learning ensemble reaches 96.7% accuracy and 0.933 AI-class F1. I treat this as supporting evidence, not as the main deployed result."
 )
 
-h("6 Error Analysis, Ethics, and Deployment")
+h("4 Interpretation and Limitations")
 p(
-    "In AI-image detection, false positives and false negatives have different costs. A false positive may wrongly label a real image as synthetic, while a false negative may let a fake image pass as real. The deployed Hugging Face Space therefore presents the output as statistical decision support, not proof of image origin. The Grad-CAM-style visualization is also described as model attention rather than evidence of actual AI artifacts."
+    "The Random Forest result does not mean the detector has solved AI-image detection. It means that this dataset contains low-level signals that the handcrafted features capture well. The model may rely on dataset-specific artifacts such as compression style, resolution patterns, generator texture, or repeated preprocessing. These signals can be useful for a course project, but they may not transfer to every real-world image source."
 )
 p(
-    "The Hugging Face demo is available at https://huggingface.co/spaces/Theo9598/ai-vs-real-image-detector. The active Space predictor is the Tiny GenImage Random Forest model from Table 3, using the validation-selected threshold 0.545. The ResNet18 model is retained in the Space only to produce the model-attention visualization. The local ensemble and other models are retained as comparison results. The GitHub appendix is available at https://github.com/Theo9598/ai-vs-real-image-detector. A real deployment would require larger multi-source validation, uncertainty thresholds, human review, and careful policy design."
+    "A key limitation is generalization to newer AI generators and image-to-image systems. If a new model produces images with more realistic camera noise, different compression, or fewer frequency artifacts, the Random Forest may perform worse. It may also struggle with edited real photos, screenshots, low-resolution uploads, or image-to-image outputs where a real photo is partially modified. In a quick qualitative check, image-to-image style examples such as the user's 'image2' case were less reliable, which is consistent with the limitation that the model learned Tiny GenImage patterns rather than universal proof of image origin."
 )
-
-h("7 Conclusion")
 p(
-    "This project applies the supervised learning workflow from IEOR 142A to a current image-classification problem. The final message is that careful evaluation matters more than simply adding advanced models. The local experiment and the Tiny GenImage 5k experiment both show that classical baselines are essential. Random Forest with handcrafted image features is highly competitive, while ResNet18 transfer learning provides a useful but not automatically superior comparison. The project demonstrates data preparation, feature engineering, model comparison, validation-based threshold selection, classifier metrics, deployment, and honest limitation analysis."
+    "For this reason, the Hugging Face Space presents the output as statistical decision support, not proof. False positives may unfairly label real images as fake, while false negatives may miss synthetic content. A real deployment would need larger multi-generator training data, uncertainty thresholds, periodic retraining, and human review."
 )
 
+h("5 Deployment and Conclusion")
+p(
+    "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment."
+)
+
+story.append(PageBreak())
 h("Appendix")
 p(
-    "Code and artifacts are available in the GitHub repository. Key files include train_ai_detector.py, compare_course_vs_transfer.py, tiny_genimage_5k_compare.py, hf_space_ai_detector/app.py, and the results folder. Tiny GenImage outputs are stored under results/tiny_genimage_5k, including tiny_genimage_5k_model_comparison.csv, tiny_genimage_5k_resnet18_history.csv, tiny_genimage_5k_test_f1.png, and tiny_genimage_5k_summary.json."
+    "The following appendix includes the main source code directly in the report. The full repository also contains result CSV files, plots, metadata, and model files. Key model artifacts are tiny_genimage_random_forest.joblib for the deployed predictor and tiny_genimage_resnet18_best.pt for the attention visualization."
 )
+
+for code_path in [
+    Path("tiny_genimage_5k_compare.py"),
+    Path("hf_space_ai_detector") / "app.py",
+    Path("compare_course_vs_transfer.py"),
+]:
+    add_code_file(code_path)
 
 
 def footer(canvas, doc):
