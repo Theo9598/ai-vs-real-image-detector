@@ -25,7 +25,7 @@ ROOT = Path(r"G:\CodexProjects\New project 3")
 REPORTS = ROOT / "reports"
 RESULTS = ROOT / "results"
 TINY_RESULTS = RESULTS / "tiny_genimage_5k"
-OUT = REPORTS / "142A_final_project_ai_detector_appendix.pdf"
+OUT = REPORTS / "142A_final_project_ai_detector_code_appendix.pdf"
 
 
 def register_fonts():
@@ -319,15 +319,10 @@ p(
 
 h("5 Deployment and Conclusion")
 p(
-    "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment."
+    "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment. Readers who want the complete project files, result artifacts, and model files can visit the GitHub repository linked on the first page."
 )
 
 story.append(PageBreak())
-h("Appendix")
-p(
-    "The following appendix includes the main source code directly in the report. The full repository also contains result CSV files, plots, metadata, and model files. Key model artifacts are tiny_genimage_random_forest.joblib for the deployed predictor and tiny_genimage_resnet18_best.pt for the attention visualization."
-)
-
 for code_path in [
     Path("tiny_genimage_5k_compare.py"),
     Path("hf_space_ai_detector") / "app.py",
