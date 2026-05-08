@@ -227,6 +227,7 @@ for meta in [
     "GitHub appendix: https://github.com/Theo9598/ai-vs-real-image-detector",
     "Primary dataset: Tiny GenImage 5k subset from https://huggingface.co/datasets/TheKernel01/Tiny-GenImage",
     "Local comparison dataset: course project Google Drive dataset",
+    "Presentation recording: [Paste accessible recording link before Gradescope submission]",
 ]:
     pn(meta)
 
@@ -322,7 +323,6 @@ p(
     "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment. Readers who want the complete project files, result artifacts, and model files can visit the GitHub repository linked on the first page."
 )
 
-story.append(PageBreak())
 for code_path in [
     Path("tiny_genimage_5k_compare.py"),
     Path("hf_space_ai_detector") / "app.py",
