@@ -11,7 +11,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     Image,
     KeepTogether,
-    PageBreak,
     Paragraph,
     Preformatted,
     SimpleDocTemplate,
@@ -25,7 +24,7 @@ ROOT = Path(r"G:\CodexProjects\New project 3")
 REPORTS = ROOT / "reports"
 RESULTS = ROOT / "results"
 TINY_RESULTS = RESULTS / "tiny_genimage_5k"
-OUT = REPORTS / "142A_final_project_ai_detector_code_appendix.pdf"
+OUT = REPORTS / "142A_final_project_ai_detector_submission.pdf"
 
 
 def register_fonts():
@@ -210,11 +209,11 @@ def add_code_file(relative_path):
     path = ROOT / relative_path
     if not path.exists():
         return
-    story.append(PageBreak())
-    h(f"Appendix Code: {relative_path}")
+    sh(str(relative_path))
     code = path.read_text(encoding="utf-8", errors="replace")
     # Escape XML-sensitive characters because ReportLab parses Preformatted text.
     story.append(Preformatted(html.escape(code, quote=False), styles["RefCode"], maxLineLength=118))
+    story.append(Spacer(1, 0.08 * inch))
 
 
 REPORTS.mkdir(exist_ok=True)
@@ -323,6 +322,7 @@ p(
     "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment. Readers who want the complete project files, result artifacts, and model files can visit the GitHub repository linked on the first page."
 )
 
+h("Appendix Code")
 for code_path in [
     Path("tiny_genimage_5k_compare.py"),
     Path("hf_space_ai_detector") / "app.py",

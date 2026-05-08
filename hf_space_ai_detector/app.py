@@ -49,7 +49,7 @@ TINY_GENIMAGE_ROWS = [
 
 PROJECT_LINKS = """
 - GitHub appendix: https://github.com/Theo9598/ai-vs-real-image-detector
-- Final report: see `reports/142A_final_project_ai_detector_code_appendix.pdf` in GitHub
+- Final report: see `reports/142A_final_project_ai_detector_submission.pdf` in GitHub
 - Tiny GenImage dataset: https://huggingface.co/datasets/TheKernel01/Tiny-GenImage
 """
 
