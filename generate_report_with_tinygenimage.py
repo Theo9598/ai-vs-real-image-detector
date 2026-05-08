@@ -11,6 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     Image,
     KeepTogether,
+    PageBreak,
     Paragraph,
     Preformatted,
     SimpleDocTemplate,
@@ -322,6 +323,7 @@ p(
     "The deployed Hugging Face Space uses the Tiny GenImage Random Forest model for final prediction and the ResNet18 model only for the attention visualization. This design matches the report result while still giving an interpretable visual bonus. Overall, the project demonstrates supervised learning, stratified splitting, feature engineering, validation-based threshold selection, model comparison, error analysis, and deployment. Readers who want the complete project files, result artifacts, and model files can visit the GitHub repository linked on the first page."
 )
 
+story.append(PageBreak())
 h("Appendix Code")
 for code_path in [
     Path("tiny_genimage_5k_compare.py"),
